@@ -4,12 +4,12 @@ from dotenv import load_dotenv
 import openai
 import logging
 
+# Carregando as variáveis de ambiente do arquivo .env
+load_dotenv() 
+
 # Configuração do Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Carregando variáveis de ambiente
-load_dotenv()
 
 app = Flask(__name__)
 
