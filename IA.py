@@ -1,37 +1,53 @@
-from flask import Flask, request, jsonify
 import os
+from flask import Flask, request, jsonify
+from dotenv import load_dotenv
 import openai
+import logging
+
+# Configuração do Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Carregando variáveis de ambiente
+load_dotenv()
 
 app = Flask(__name__)
 
-# Configure sua chave de API da OpenAI
+# Obtendo a chave da API OpenAI do arquivo .env
 openai.api_key = os.getenv('OPENAI_API_KEY')
-# Defina o modelo do ChatGPT que você deseja usar
-modelo = "text-davinci-003" # ou outro modelo de sua preferência
+if openai.api_key is None:
+    logger.error("Erro: Chave da API OpenAI não encontrada no arquivo .env")
+    exit(1)
 
 @app.route('/chat', methods=['POST'])
 def chat():
-  try:
-    dados = request.get_json()
-    mensagem_usuario = dados.get('mensagem')
+    try:
+        data = request.get_json()
+        mensagem_usuario = data.get('mensagem')
 
-    if not mensagem_usuario:
-      return jsonify({'erro': 'Mensagem não fornecida'}), 400
+        # Verificação básica da mensagem
+        if not mensagem_usuario:
+            return jsonify({'erro': 'Mensagem inválida.'}), 400
 
-    resposta = openai.Completion.create(
-      engine=modelo,
-      prompt=mensagem_usuario,
-      max_tokens=150, # Ajuste conforme necessário
-      n=1,
-      stop=None,
-      temperature=0.7, # Ajuste a temperatura para respostas mais criativas (valores mais altos) ou mais conservadoras (valores mais baixos)
-    )
+        logger.info(f"Mensagem recebida: {mensagem_usuario}")
 
-    resposta_chatbot = resposta.choices[0].text.strip()
-    return jsonify({'resposta': resposta_chatbot})
+        resposta = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=mensagem_usuario,
+            max_tokens=150,
+            n=1,
+            stop=None,
+            temperature=0.7,
+        )
 
-  except Exception as e:
-    return jsonify({'erro': f'Erro ao processar a requisição: {str(e)}'}), 500
+        resposta_chatbot = resposta.choices[0].text.strip()
+        logger.info(f"Resposta do chatbot: {resposta_chatbot}")
+
+        return jsonify({'resposta': resposta_chatbot})
+
+    except Exception as e:
+        logger.error(f"Erro ao processar a requisição: {str(e)}")
+        return jsonify({'erro': 'Ocorreu um erro ao processar a requisição.'}), 500
 
 if __name__ == '__main__':
-  app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000)
