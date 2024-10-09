@@ -3,9 +3,6 @@ from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 import openai
 import logging
-from dotenv import load_dotenv
-load_dotenv()
-
 
 # Configuração do Logging
 logging.basicConfig(level=logging.INFO)
@@ -19,6 +16,7 @@ if chave_api_arquivo:
     try:
         with open(chave_api_arquivo, 'r') as arquivo:
             openai.api_key = arquivo.read().strip()
+        logger.info("Chave de API carregada com sucesso a partir de OPENAI_API_KEY_FILE.")
     except FileNotFoundError:
         logger.error(f"Erro: Arquivo de chave de API não encontrado: {chave_api_arquivo}")
         exit(1)
@@ -29,6 +27,8 @@ else:
     if openai.api_key is None:
         logger.error("Erro: Chave da API OpenAI não encontrada no arquivo .env nem em OPENAI_API_KEY_FILE")
         exit(1)
+    else:
+        logger.info("Chave de API carregada com sucesso a partir do arquivo .env.")
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -42,7 +42,6 @@ def chat():
 
         logger.info(f"Mensagem recebida: {mensagem_usuario}")
 
-        # Requisição para a API do OpenAI
         resposta = openai.Completion.create(
             engine="text-davinci-003",
             prompt=mensagem_usuario,
@@ -52,7 +51,6 @@ def chat():
             temperature=0.7,
         )
 
-        # Extraindo a resposta do chatbot
         resposta_chatbot = resposta.choices[0].text.strip()
         logger.info(f"Resposta do chatbot: {resposta_chatbot}")
 
@@ -67,4 +65,4 @@ def chat():
         return jsonify({'erro': 'Ocorreu um erro inesperado.'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True)
