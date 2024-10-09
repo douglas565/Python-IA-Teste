@@ -4,22 +4,28 @@ from dotenv import load_dotenv
 import openai
 import logging
 
-# Carregando as variáveis de ambiente do arquivo .env
-load_dotenv() 
-
 # Configuração do Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# Obtendo a chave da API OpenAI do arquivo .env
-openai.api_key = os.getenv('OPENAI_API_KEY')
-
-# Verificação da chave da API
-if openai.api_key is None:
-    logger.error("Erro: Chave da API OpenAI não encontrada no arquivo .env")
-    exit(1)
+# Carrega a chave da API do arquivo, se a variável de ambiente estiver definida
+chave_api_arquivo = os.getenv('OPENAI_API_KEY_FILE')
+if chave_api_arquivo:
+    try:
+        with open(chave_api_arquivo, 'r') as arquivo:
+            openai.api_key = arquivo.read().strip()
+    except FileNotFoundError:
+        logger.error(f"Erro: Arquivo de chave de API não encontrado: {chave_api_arquivo}")
+        exit(1)
+else:
+    # Caso contrário, tenta carregar do .env (apenas para desenvolvimento local)
+    load_dotenv()
+    openai.api_key = os.getenv('OPENAI_API_KEY')
+    if openai.api_key is None:
+        logger.error("Erro: Chave da API OpenAI não encontrada no arquivo .env nem em OPENAI_API_KEY_FILE")
+        exit(1)
 
 @app.route('/chat', methods=['POST'])
 def chat():
