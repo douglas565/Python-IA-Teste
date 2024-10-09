@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Obtendo a chave da API OpenAI do arquivo .env
-openai.api_key = os.getenv('OPENAI_API_KEY')
+openai.api_key = open(os.getenv('OPENAI_API_KEY_FILE')).read().strip()
 
 # Verificação da chave da API
 if openai.api_key is None:
