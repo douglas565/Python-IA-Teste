@@ -3,6 +3,9 @@ from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 import openai
 import logging
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # Configuração do Logging
 logging.basicConfig(level=logging.INFO)
